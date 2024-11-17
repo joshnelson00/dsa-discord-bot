@@ -1,4 +1,4 @@
-import ollama
+import ollama # type: ignore
 
 def get_practice_question(topic: str) -> str:
 
@@ -15,6 +15,7 @@ def get_practice_question(topic: str) -> str:
         return result['response']
     except Exception as e:
         return f"An error occurred: {e}"
+
 
 def main():
     ollama.create(model='llama3.2', modelfile=modelfile)
