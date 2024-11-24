@@ -1,3 +1,4 @@
+import textwrap
 from db import *
 import discord
 from discord import ui
@@ -92,13 +93,11 @@ def get_md_text(problem: dict):
     description = problem['description']
 
     # Markdown payload without indent and with centered title
-    message = f"""
+    message = f"""\
     # {title}
     Difficulty: {difficulty}
-    \n
     Description: {description}
-    \n
-    [View Problem]({url})
-    [View Solution]({solution_link})
-    """
+
+    **[View Problem]({url})**
+    **[View Solution]({solution_link})**"""
     return message

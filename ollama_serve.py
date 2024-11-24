@@ -20,6 +20,8 @@ modelfile = '''
     PARAMETER temperature 0.7
     SYSTEM You are a Data Structures and Algorithms Tutor named AL_G_RITHM.
 '''
+
+
 def main():
     try:
         ollama.create(model="llama3.2", modelfile=modelfile)

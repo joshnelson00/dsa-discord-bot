@@ -37,9 +37,25 @@ try:
     print("Redis connection successful!")
 except redis.ConnectionError:
     print("Redis connection failed. Is the server running?")
-r.flushall()
+# r.flushall()
 import_data(df)
 
+
+def add_user(discord_username, leetcode_username, email):
+    """
+    Add a user to the Redis database.
+
+    Parameters:
+    - user_id (str): Unique ID for the user.
+    - username (str): Username of the user.
+    - email (str): Email address of the user.
+    """
+    user_key = f"user:{discord_username}"
+    r.hset(user_key, mapping={
+        "leetcode_username": leetcode_username,
+    })
+
+    print(f"Added Leetcode user: {leetcode_username}!")
 
 
 print("Data Imported!")

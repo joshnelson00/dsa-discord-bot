@@ -5,9 +5,7 @@ from discord.ext import commands  # type: ignore
 from dotenv import load_dotenv
 from ollama_serve import query_ollama
 from question_serve import *
-import logging
-
-# Set up logging to see more about the response
+from user_info import *
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -18,7 +16,6 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix='/', intents=intents)
-
 
 @bot.event
 async def on_ready():
@@ -89,7 +86,7 @@ class DSADropdownView(discord.ui.View):
         self.add_item(problem_topic())  # Add the topic dropdown
 
     # Button to trigger the modal for asking questions
-    @discord.ui.button(label="Ask a Question", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Need a Hint?", style=discord.ButtonStyle.primary)
     async def ask_question(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not self.problem:
             await interaction.response.send_message(
@@ -141,8 +138,6 @@ class AskLLMModal(discord.ui.Modal, title="Ask About the Problem"):
             ephemeral=True
         )
 
-
-
 # Command for practicing problems
 @bot.command()
 async def practice_problem(ctx):
@@ -154,4 +149,67 @@ async def dsa(ctx):
     # Sends a message with our dropdown containing topics
     view = DSADropdownView()
     await ctx.send("Practice a DSA Question:", view=view)
+
+@bot.command()
+async def add_user(ctx, username: str = None):
+    if username is None or not username.strip():
+        await ctx.send(f"Please provide a valid username, {ctx.author.mention}.")
+        return
+
+    user_id = ctx.author.id  # Discord user ID
+    guild_id = ctx.guild.id  # Server ID (to avoid conflicts across servers)
+
+    # Create a key specific to the guild
+    key = f"server:{guild_id}:users"
+
+    # Check if the username already exists in the list
+    existing_usernames = r.lrange(key, 0, -1)  # Get all usernames in the list
+    if username.encode() in existing_usernames:  # Check if username exists
+        await ctx.send(f"Username `{username}` already exists in the database.")
+        return
+
+    # Add username if it doesn't exist
+    r.rpush(key, username)
+    await ctx.send(f"Added Leetcode username `{username}` for user {ctx.author.mention}!")
+
+@bot.command()
+async def remove_user(ctx, username: str):
+    # Ensure the username is provided
+    if not username:
+        await ctx.send("Please provide a username to remove.")
+        return
+
+    guild_id = ctx.guild.id  # Get the current server's ID
+    key = f"server:{guild_id}:users"  # The key used in Redis to store usernames
+
+    # Remove the specified username from the Redis list
+    removed_count = r.lrem(key, 0, username)
+
+    # Check if the username was removed
+    if removed_count > 0:
+        await ctx.send(f"Username `{username}` has been removed from the list.")
+    else:
+        await ctx.send(f"Username `{username}` not found in the list.")
+
+@bot.command()
+async def show_competitors(ctx):
+    guild_id = ctx.guild.id  # Get the current server's ID
+    key = f"server:{guild_id}:users"  # The key used in Redis to store usernames
+
+    # Retrieve all usernames stored in Redis for this guild
+    usernames = r.lrange(key, 0, -1)  # Gets the entire list of usernames
+
+    # Filter out any invalid usernames (None or empty)
+    valid_usernames = [username for username in usernames if username.strip()]
+
+    if not valid_usernames:
+        await ctx.send("No valid usernames have been added yet!")
+        return
+    
+    print(get_leetcode_leaderboard(valid_usernames))  # Check if this prints None
+
+    # Format the usernames for display
+    formatted_usernames = "\n* ".join(valid_usernames)
+    await ctx.send(f"Competitors:\n```\n* {formatted_usernames}\n```")
+
 bot.run(TOKEN)
