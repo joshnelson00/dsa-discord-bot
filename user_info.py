@@ -9,11 +9,11 @@ def get_user_data(username: str):
         data = response.json()
     else:
         print("API request failed with status:", response.status_code)
-        return
+        return False
 
     if 'errors' in data:
         print(f"User {username} not found.")
-        return
+        return False
 
     # Standardize the keys
     summary = {
@@ -80,3 +80,4 @@ def leetcode_user_exists(username: str):
         print(f"User {username} not found.")
         return False
     return True
+
