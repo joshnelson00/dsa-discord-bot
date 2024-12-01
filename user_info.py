@@ -25,7 +25,7 @@ def get_user_data(username: str):
 
     return summary
 
-def get_leetcode_leaderboard(users: List[str]):
+def get_desktop_leetcode_leaderboard(users: List[str]):
     user_data_list = []
 
     # Collect user data
@@ -65,6 +65,48 @@ def get_leetcode_leaderboard(users: List[str]):
     leaderboard_message += "+------+-----------------+-------------+---------------+-------------+-------------+ ```"
 
     return leaderboard_message
+
+def get_mobile_leetcode_leaderboard(users: List[str]):
+    user_data_list = []
+
+    # Collect user data
+    for user in users:
+        user_data = get_user_data(user)
+        if user_data:  # Skip None results
+            user_data_list.append(user_data)
+
+    # Check if we have valid user data to display
+    if not user_data_list:
+        return "No valid user data available to display."
+
+    # Sort user data based on the weighted sum (Total Score)
+    sorted_data = sorted(
+        user_data_list,
+        key=lambda d: d['easySolved'] * 1 + d['mediumSolved'] * 2 + d['hardSolved'] * 3,
+        reverse=True
+    )
+
+    # Create formatted leaderboard message
+    trophy_emoji = ":trophy:"
+    leaderboard_message =  f"{trophy_emoji} **Leaderboard** {trophy_emoji}\n\n"
+    
+    # Compact horizontal display for leaderboard
+    leaderboard_message += "```\n"
+    leaderboard_message += "Rank | Username   | Easy | Med | Hard | Total\n"
+    leaderboard_message += "---------------------------------------------\n"
+
+    # Populate leaderboard with user data
+    for i, user in enumerate(sorted_data, 1):
+        easy = user['easySolved']
+        medium = user['mediumSolved']
+        hard = user['hardSolved']
+        total_score = easy * 1 + medium * 2 + hard * 3
+        leaderboard_message += f"{i:<4} | {user['username'][:10]:<10} | {easy:<4} | {medium:<3} | {hard:<4} | {total_score:<5}\n"
+
+    leaderboard_message += "```"
+
+    return leaderboard_message
+
 
 def leetcode_user_exists(username: str):
     url = f"https://leetcode-api-faisalshohag.vercel.app/{username}"

@@ -17,14 +17,84 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f'{bot.user} has connected to Discord!')
+    print(f"Logged in as {bot.user}")
+    # Iterate through all the servers the bot is in to ensure the rules channel exists
+    for guild in bot.guilds:
+        await ensure_rules_channel(guild)
+
+@bot.event
+async def on_guild_join(guild):
+    """When the bot joins a new server, create the rules channel."""
+    await ensure_rules_channel(guild)
+
+async def ensure_rules_channel(guild):
+    # Check if the "rules" channel exists
+    rules_channel = discord.utils.get(guild.text_channels, name="AL_G_RITHM-bot-help")
+    if rules_channel:
+        return
+
+    # Create the "rules" channel
     try:
-        await bot.tree.sync()
-        print("Commands synced successfully.")
-        for command in await bot.tree.fetch_commands():
-            print(f"Command: {command.name}")
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(send_messages=False)  # Make it read-only
+        }
+        help_channel = await guild.create_text_channel("AL_G_RITHM-bot-help", overwrites=overwrites)
+        
+        # Send the Markdown message
+        await help_channel.send("""
+# How to Use AL_G_RITHM
+
+Welcome to the **AL_G_RITHM** Bot! This bot helps you practice Data Structures and Algorithms (DSA) questions, get hints, and view leaderboards. Here's how to use it:
+
+## Commands
+
+### 1.`!leetcode_problem` :jigsaw:
+Practice a **Leetcode** DSA problem.
+- Type `!leetcode_problem`.
+- Select a topic and difficulty.
+- Get a problem to solve.
+
+### 2.`!ai_problem` :robot:
+Practice an **AI-Generated** DSA problem.
+- Type `!ai_problem`.
+- Select a topic and difficulty.
+- Get a problem to solve.
+
+### 3. `!add_user <username>` :white_check_mark:
+Add your **Leetcode** username to the leaderboard.
+- Type `!add_user <your_username>`.
+- The bot will verify and add your username.
+
+### 4. `!remove_user <username>` :no_entry:
+Remove your **Leetcode** username from the leaderboard.
+- Type `!remove_user <your_username>`.
+
+### 5. `!leaderboard` :trophy:
+View the top Leetcode problem solvers in the server.
+- Type `!leaderboard`.
+- The bot shows the top performers.
+- The leaderboard is synced to your account on Leetcode and only tracks **Leetcode** problems, not AI problems!
+
+
+## Getting Started :rocket:
+
+1. Type `!leetcode_problem` or `!ai_problem` to get started.
+2. Select the topic and difficulty to get a problem. This may take up to 30 seconds :hourglass_flowing_sand:.
+3. If you need help, press the "Need a Hint?" button :bulb:.
+4. Add your Leetcode username to the leaderboard with `!add_user <username>`. (Make sure that you have created an account!)
+
+## Rules
+
+1. **Be respectful** :pray: : Be polite to others.
+2. **Avoid spamming** :no_entry_sign: : Use commands when needed.
+3. **Follow server rules** :scroll: : Adhere to server and Discord rules.
+
+The bot is meant to be fun and educational! :mortar_board: Let's improve our DSA skills! :muscle:
+""")
+        
     except Exception as e:
-        print(f"Failed to sync commands: {e}")
+        print(f"Failed to create 'rules' channel in {guild.name}: {e}")
+
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -255,8 +325,9 @@ async def leaderboard(ctx):
         await ctx.send("No valid usernames have been added yet!")
         return
     
-    leaderboard = get_leetcode_leaderboard(valid_usernames) # Check if this prints None
-
+    leaderboard = get_desktop_leetcode_leaderboard(valid_usernames)
+    
+    # Send the leaderboard
     await ctx.send(leaderboard)
 
 bot.run(TOKEN)
