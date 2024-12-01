@@ -1,8 +1,5 @@
-import textwrap
 from db import *
 import discord
-from discord import ui
-from discord.ui import Modal, TextInput, Select
 import random
 import ollama  # type: ignore
 

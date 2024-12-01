@@ -1,11 +1,11 @@
 import asyncio
 import os
 import discord  # type: ignore
-import ollama_serve
 from discord.ext import commands  # type: ignore
 from dotenv import load_dotenv
-from question_serve import *
+from question_serve import get_topic_options, get_difficulty_options, get_md_text, get_ai_problem, get_problem
 from user_info import *
+from db import r
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -22,10 +22,12 @@ async def on_ready():
     for guild in bot.guilds:
         await ensure_rules_channel(guild)
 
+
 @bot.event
 async def on_guild_join(guild):
     """When the bot joins a new server, create the rules channel."""
     await ensure_rules_channel(guild)
+
 
 async def ensure_rules_channel(guild):
     # Check if the "rules" channel exists
