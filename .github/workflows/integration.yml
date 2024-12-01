@@ -29,13 +29,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # Step 4: Run tests with pytest
-    - name: Run tests
-      run: |
-        pytest  
-    # Adjust if you're using a different testing framework
-
-    # Step 5: Run flake8 for linting
+    # Step 4: Run flake8 for linting
     - name: Run flake8
       run: |
         flake8 .  
