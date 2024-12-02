@@ -31,7 +31,7 @@ df = df.dropna(subset=['solution_link'])
 df = df.drop(columns=['id', 'is_premium', 'acceptance_rate', 'frequency', 'discuss_count', 'accepted', 'submissions', 'companies', 'likes', 'dislikes', 'rating', 'asked_by_faang', 'similar_questions'])
 
 # Initialize DB
-r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+r = redis.Redis(host='redis', port=6379, decode_responses=True)
 try:
     r.ping()
     print("Redis connection successful!")

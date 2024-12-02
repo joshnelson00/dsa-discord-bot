@@ -1,0 +1,16 @@
+version: "3.12"
+services:
+  bot:
+    build: .
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+    depends_on:
+      - redis
+    volumes:
+      - .:/app
+    command: python3 bot.py
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"  # Expose Redis on default port 6379 (optional)
